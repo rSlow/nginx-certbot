@@ -1,0 +1,26 @@
+services:
+  nginx:
+    restart: always
+    container_name: nginx_base
+    image: nginx:latest
+    network_mode: host
+    env_file:
+      - ./.env
+    environment:
+      - NGINX_TEMPLATE
+    volumes:
+      - ./certs/certs-data/letsencrypt/:/data/letsencrypt/:ro
+      - ./certs/certs-data/certs/:/data/certs/:ro
+      - ./${NGINX_TEMPLATE:-default.conf}:/etc/nginx/templates/default.conf.template/:rw
+
+  certbot:
+    build:
+      context: ./certbot
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - nginx
+    volumes:
+      - ./certs/certs-data/letsencrypt/:/data/letsencrypt/:rw
+      - ./certs/certs-data/certs/:/etc/letsencrypt/:rw
